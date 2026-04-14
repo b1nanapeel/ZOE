@@ -5,6 +5,13 @@ import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 
 const PUBLIC_PATHS = ["/login", "/signup"];
 const AUTH_PATHS = ["/login", "/signup"];
+const TERMS_EXEMPT_PATHS = [
+  "/login",
+  "/signup",
+  "/onboarding",
+  "/terms",
+  "/terms-accept",
+];
 
 function rateLimitResponse(
   request: NextRequest,
@@ -58,6 +65,24 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
+  }
+
+  // Terms gate — signed-in users must accept before reaching the dashboard.
+  if (
+    user &&
+    !pathname.startsWith("/api/") &&
+    !TERMS_EXEMPT_PATHS.includes(pathname)
+  ) {
+    const { data: accepted } = await supabase
+      .from("user_terms_acceptance")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!accepted) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/terms-accept";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;

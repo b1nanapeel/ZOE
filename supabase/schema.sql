@@ -465,6 +465,36 @@ insert into storage.buckets (id, name, public)
 values ('research', 'research', false)
 on conflict (id) do nothing;
 
+-- =========================================================
+-- TERMS ACCEPTANCE
+-- =========================================================
+create table if not exists user_terms_acceptance (
+  id text primary key default gen_random_uuid()::text,
+  user_id text not null unique,
+  accepted_at timestamptz not null default now(),
+  terms_version text not null default '1.0',
+  opted_out_of_training boolean not null default false
+);
+create index if not exists user_terms_user_idx on user_terms_acceptance(user_id);
+
+alter table user_terms_acceptance enable row level security;
+
+drop policy if exists terms_self_read on user_terms_acceptance;
+create policy terms_self_read on user_terms_acceptance
+for select to authenticated
+using (user_id = auth.uid()::text);
+
+drop policy if exists terms_self_insert on user_terms_acceptance;
+create policy terms_self_insert on user_terms_acceptance
+for insert to authenticated
+with check (user_id = auth.uid()::text);
+
+drop policy if exists terms_self_update on user_terms_acceptance;
+create policy terms_self_update on user_terms_acceptance
+for update to authenticated
+using (user_id = auth.uid()::text)
+with check (user_id = auth.uid()::text);
+
 drop policy if exists "research admin all" on storage.objects;
 create policy "research admin all" on storage.objects
 for all to authenticated

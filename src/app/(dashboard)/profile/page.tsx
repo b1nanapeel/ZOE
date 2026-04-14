@@ -16,6 +16,7 @@ import {
   DeleteAccountButton,
 } from "@/components/profile/AccountActions";
 import { ShowInsightsToggle } from "@/components/research/InsightsToggle";
+import { OptOutToggle } from "@/components/profile/OptOutToggle";
 
 export default async function ProfilePage() {
   if (!isSupabaseConfigured()) {
@@ -44,6 +45,13 @@ export default async function ProfilePage() {
         .select("id", { count: "exact", head: true })
         .eq("child_id", child.id)
     : { count: 0 };
+
+  const { data: terms } = await supabase
+    .from("user_terms_acceptance")
+    .select("opted_out_of_training")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const optedOut = Boolean(terms?.opted_out_of_training);
 
   return (
     <div className="space-y-6">
@@ -105,6 +113,7 @@ export default async function ProfilePage() {
           Preferences
         </h3>
         <ShowInsightsToggle />
+        <OptOutToggle initial={optedOut} />
       </section>
 
       <section className="space-y-2">
@@ -126,6 +135,16 @@ export default async function ProfilePage() {
           records. There's no undo.
         </p>
       </section>
+
+      <footer className="pt-6 text-center text-xs text-neutral-500">
+        <Link
+          href="/terms"
+          className="underline hover:text-neutral-700"
+          target="_blank"
+        >
+          Terms &amp; Conditions
+        </Link>
+      </footer>
     </div>
   );
 }
