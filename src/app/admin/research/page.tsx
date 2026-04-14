@@ -11,6 +11,7 @@ import {
   type ChunkRowData,
   type PaperRowData,
 } from "@/components/admin/PaperRow";
+import { AiAccuracySection } from "@/components/admin/AiAccuracySection";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +96,13 @@ export default async function ResearchAdminPage() {
             </p>
           </div>
         </header>
+
+        <section>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            AI accuracy
+          </h2>
+          <AiAccuracySection />
+        </section>
 
         <section>
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">

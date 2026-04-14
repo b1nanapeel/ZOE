@@ -61,13 +61,13 @@ export default function WelcomePage() {
             See what your child is telling you
           </p>
 
-          <Link
-            href="/login"
+          <a
+            href="#problem"
             className="mt-14 inline-flex items-center justify-center rounded-full px-10 py-4 text-base font-medium tracking-wide transition hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(201,168,76,0.35)]"
             style={{ backgroundColor: COLORS.gold, color: COLORS.bg }}
           >
             Get Started
-          </Link>
+          </a>
 
           <p
             className="mt-6 text-xs"
@@ -82,8 +82,8 @@ export default function WelcomePage() {
 
         <a
           href="#problem"
-          className="absolute bottom-10 text-xs tracking-widest opacity-50 hover:opacity-90"
-          style={{ color: COLORS.cream }}
+          className="animate-zoe-bounce absolute bottom-10 text-sm font-medium tracking-[0.35em] hover:opacity-100"
+          style={{ color: COLORS.gold, opacity: 0.9 }}
         >
           SCROLL ↓
         </a>
@@ -404,6 +404,13 @@ export default function WelcomePage() {
         }
         .animate-zoe-fade-in {
           animation: zoe-fade-in 900ms ease-out both;
+        }
+        @keyframes zoe-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(8px); }
+        }
+        .animate-zoe-bounce {
+          animation: zoe-bounce 1.8s ease-in-out infinite;
         }
         html { scroll-behavior: smooth; }
       `}</style>

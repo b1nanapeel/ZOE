@@ -552,6 +552,42 @@ for update to authenticated
 using (user_id = auth.uid()::text)
 with check (user_id = auth.uid()::text);
 
+-- =========================================================
+-- AI FEEDBACK LOOP (accuracy tracking)
+-- =========================================================
+create table if not exists ai_feedback_loop (
+  id text primary key default gen_random_uuid()::text,
+  clip_id text not null references clips(id) on delete cascade,
+  ai_suggested_behaviors text[] not null default '{}',
+  parent_final_behaviors text[] not null default '{}',
+  ai_suggested_antecedents text[] not null default '{}',
+  parent_final_antecedents text[] not null default '{}',
+  ai_suggested_consequences text[] not null default '{}',
+  parent_final_consequences text[] not null default '{}',
+  ai_suggested_mood text,
+  parent_final_mood text,
+  ai_confidence float,
+  accuracy_score float,
+  created_at timestamptz not null default now()
+);
+create index if not exists ai_feedback_loop_created_idx on ai_feedback_loop(created_at desc);
+create index if not exists ai_feedback_loop_clip_idx on ai_feedback_loop(clip_id);
+
+alter table ai_feedback_loop enable row level security;
+
+drop policy if exists ai_feedback_owner_insert on ai_feedback_loop;
+create policy ai_feedback_owner_insert on ai_feedback_loop
+for insert to authenticated
+with check (exists (
+  select 1 from clips cl join children c on c.id = cl.child_id
+  where cl.id = ai_feedback_loop.clip_id and c.parent_id = auth.uid()::text
+));
+
+drop policy if exists ai_feedback_admin_read on ai_feedback_loop;
+create policy ai_feedback_admin_read on ai_feedback_loop
+for select
+using (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com');
+
 drop policy if exists "research admin all" on storage.objects;
 create policy "research admin all" on storage.objects
 for all to authenticated

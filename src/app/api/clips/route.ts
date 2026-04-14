@@ -24,9 +24,25 @@ const ClipSchema = z.object({
   recordedAt: z.string().nullish(),
   aiObservation: z.string().nullish(),
   aiConfidence: z.number().nullish(),
+  aiSuggestedBehaviors: z.array(z.string()).nullish(),
+  aiSuggestedAntecedents: z.array(z.string()).nullish(),
+  aiSuggestedConsequences: z.array(z.string()).nullish(),
+  aiSuggestedMood: z.string().nullish(),
   audioFeatures: z.record(z.string(), z.unknown()).nullish(),
   movementFeatures: z.record(z.string(), z.unknown()).nullish(),
 });
+
+function jaccard(a: string[], b: string[]): number {
+  if (a.length === 0 && b.length === 0) return 1;
+  const A = new Set(a);
+  const B = new Set(b);
+  let inter = 0;
+  A.forEach((x) => {
+    if (B.has(x)) inter += 1;
+  });
+  const union = A.size + B.size - inter;
+  return union === 0 ? 1 : inter / union;
+}
 
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -128,6 +144,47 @@ export async function POST(request: Request) {
         { status: 500 },
       );
     }
+  }
+
+  // AI feedback loop — silent, never blocks save.
+  const hasAiSuggestions =
+    v.aiObservation ||
+    (v.aiSuggestedBehaviors && v.aiSuggestedBehaviors.length > 0) ||
+    (v.aiSuggestedAntecedents && v.aiSuggestedAntecedents.length > 0) ||
+    (v.aiSuggestedConsequences && v.aiSuggestedConsequences.length > 0) ||
+    v.aiSuggestedMood;
+  if (hasAiSuggestions) {
+    const aiB = v.aiSuggestedBehaviors ?? [];
+    const aiA = v.aiSuggestedAntecedents ?? [];
+    const aiC = v.aiSuggestedConsequences ?? [];
+    const moodMatch =
+      v.aiSuggestedMood && v.moodBefore
+        ? v.aiSuggestedMood === v.moodBefore
+          ? 1
+          : 0
+        : null;
+    const parts = [
+      jaccard(aiB, v.behaviors),
+      jaccard(aiA, v.antecedents),
+      jaccard(aiC, v.consequences),
+      ...(moodMatch === null ? [] : [moodMatch]),
+    ];
+    const accuracy =
+      parts.reduce((s, n) => s + n, 0) / Math.max(1, parts.length);
+    await supabase.from("ai_feedback_loop").insert({
+      clip_id: clip.id,
+      ai_suggested_behaviors: aiB,
+      parent_final_behaviors: v.behaviors,
+      ai_suggested_antecedents: aiA,
+      parent_final_antecedents: v.antecedents,
+      ai_suggested_consequences: aiC,
+      parent_final_consequences: v.consequences,
+      ai_suggested_mood: v.aiSuggestedMood ?? null,
+      parent_final_mood: v.moodBefore ?? null,
+      ai_confidence: v.aiConfidence ?? null,
+      accuracy_score: Math.round(accuracy * 1000) / 1000,
+    });
+    // Intentionally ignore insert errors — must never block save.
   }
 
   return NextResponse.json({ clipId: clip.id });
