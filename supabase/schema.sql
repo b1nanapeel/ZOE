@@ -466,6 +466,63 @@ values ('research', 'research', false)
 on conflict (id) do nothing;
 
 -- =========================================================
+-- RESEARCH FEEDBACK + INSIGHT LOGS
+-- =========================================================
+create table if not exists research_feedback (
+  id text primary key default gen_random_uuid()::text,
+  chunk_id text not null references research_chunks(id) on delete cascade,
+  user_id text not null,
+  user_role text,
+  rating text not null check (rating in ('UP', 'DOWN')),
+  insight_text text,
+  behavioral_context text,
+  feedback_note text,
+  created_at timestamptz not null default now()
+);
+create index if not exists research_feedback_chunk_idx on research_feedback(chunk_id);
+create index if not exists research_feedback_user_idx on research_feedback(user_id);
+
+alter table research_feedback enable row level security;
+
+drop policy if exists research_feedback_self_insert on research_feedback;
+create policy research_feedback_self_insert on research_feedback
+for insert to authenticated
+with check (user_id = auth.uid()::text);
+
+drop policy if exists research_feedback_self_read on research_feedback;
+create policy research_feedback_self_read on research_feedback
+for select to authenticated
+using (user_id = auth.uid()::text);
+
+drop policy if exists research_feedback_admin on research_feedback;
+create policy research_feedback_admin on research_feedback
+for all
+using (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com')
+with check (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com');
+
+create table if not exists insight_logs (
+  id text primary key default gen_random_uuid()::text,
+  chunks_used text[] not null default '{}',
+  behavioral_query text,
+  generated_insight text,
+  page_context text,
+  created_at timestamptz not null default now()
+);
+create index if not exists insight_logs_created_idx on insight_logs(created_at desc);
+
+alter table insight_logs enable row level security;
+
+drop policy if exists insight_logs_insert on insight_logs;
+create policy insight_logs_insert on insight_logs
+for insert to authenticated
+with check (true);
+
+drop policy if exists insight_logs_admin_read on insight_logs;
+create policy insight_logs_admin_read on insight_logs
+for select
+using (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com');
+
+-- =========================================================
 -- TERMS ACCEPTANCE
 -- =========================================================
 create table if not exists user_terms_acceptance (
