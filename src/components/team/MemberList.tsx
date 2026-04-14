@@ -76,7 +76,7 @@ export function MemberList({
               </span>
               <span>·</span>
               {m.status === "ACCEPTED" ? (
-                <span className="inline-flex items-center gap-1 text-emerald-600">
+                <span className="inline-flex items-center gap-1 text-primary-600">
                   <CheckCircle2 className="h-3 w-3" />
                   Active{m.joined_at && ` since ${format(new Date(m.joined_at), "MMM d")}`}
                 </span>

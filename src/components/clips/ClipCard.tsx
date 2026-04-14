@@ -37,7 +37,7 @@ export function ClipCard({ clip }: { clip: ClipCardData }) {
           </div>
         )}
         {clip.duration_seconds > 0 && (
-          <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1 font-mono text-[10px] text-white">
+          <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1 font-mono text-[12px] text-white">
             {clip.duration_seconds}s
           </span>
         )}

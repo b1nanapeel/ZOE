@@ -66,7 +66,7 @@ export function MissionCard({
         : Target;
   const statusTone =
     mission.status === "COMPLETED"
-      ? "text-emerald-600 bg-emerald-50"
+      ? "text-secondary-700 bg-secondary-50"
       : mission.status === "EXPIRED"
         ? "text-neutral-500 bg-neutral-100"
         : "text-primary-700 bg-primary-50";

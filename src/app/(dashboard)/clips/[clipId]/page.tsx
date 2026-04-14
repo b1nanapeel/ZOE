@@ -7,8 +7,10 @@ import {
   AnnotationSection,
   type AnnotationRow,
 } from "@/components/clips/AnnotationSection";
+import { ResearchInsightList } from "@/components/research/ResearchInsightCard";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { formatInsights, searchResearch } from "@/lib/research-search";
 
 export default async function ClipDetailPage({
   params,
@@ -61,6 +63,11 @@ export default async function ClipDetailPage({
     .maybeSingle();
   const canAnnotate = membership?.role === "THERAPIST";
 
+  const behaviorQuery = (clip.behaviors ?? []).join(" ");
+  const insights = behaviorQuery
+    ? formatInsights(await searchResearch(behaviorQuery, 2))
+    : [];
+
   return (
     <div className="space-y-6">
       <Link
@@ -70,6 +77,14 @@ export default async function ClipDetailPage({
         <ArrowLeft className="h-4 w-4" /> Timeline
       </Link>
       <ClipDetail clip={clip} videoUrl={videoUrl} />
+      {insights.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            Research insights
+          </h3>
+          <ResearchInsightList insights={insights} />
+        </section>
+      )}
       <ClipActions clipId={clipId} />
       <AnnotationSection
         clipId={clipId}

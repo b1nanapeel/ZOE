@@ -4,53 +4,93 @@
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-200: #bbf7d0;
-  --color-primary-300: #86efac;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #22c55e;
-  --color-primary-600: #16a34a;
-  --color-primary-700: #15803d;
-  --color-primary-800: #166534;
-  --color-primary-900: #14532d;
+  /* Primary — warm regal gold (accent) */
+  --color-primary-50: #2a2515;
+  --color-primary-100: #3d3520;
+  --color-primary-200: #5c4f30;
+  --color-primary-300: #826b2c;
+  --color-primary-400: #a68a3a;
+  --color-primary-500: #c9a84c;
+  --color-primary-600: #d4b35d;
+  --color-primary-700: #dec272;
+  --color-primary-800: #ecdaa3;
+  --color-primary-900: #f5ecd0;
 
-  --color-secondary-50: #faf5ff;
-  --color-secondary-100: #f3e8ff;
-  --color-secondary-200: #e9d5ff;
-  --color-secondary-300: #d8b4fe;
-  --color-secondary-400: #c084fc;
-  --color-secondary-500: #a855f7;
-  --color-secondary-600: #9333ea;
+  /* Secondary — same gold family (kept for legacy refs) */
+  --color-secondary-50: #2a2515;
+  --color-secondary-100: #3d3520;
+  --color-secondary-200: #5c4f30;
+  --color-secondary-300: #826b2c;
+  --color-secondary-400: #a68a3a;
+  --color-secondary-500: #c9a84c;
+  --color-secondary-600: #d4b35d;
+  --color-secondary-700: #dec272;
+  --color-secondary-800: #ecdaa3;
+  --color-secondary-900: #f5ecd0;
 
-  --color-neutral-50: #fafaf9;
-  --color-neutral-100: #f5f5f4;
-  --color-neutral-200: #e7e5e4;
-  --color-neutral-300: #d6d3d1;
-  --color-neutral-400: #a8a29e;
-  --color-neutral-500: #78716c;
-  --color-neutral-600: #57534e;
-  --color-neutral-700: #44403c;
-  --color-neutral-800: #292524;
-  --color-neutral-900: #1c1917;
+  /* Neutral — midnight blue → cream (dark mode scale) */
+  --color-neutral-50: #0f2035;
+  --color-neutral-100: #1a3352;
+  --color-neutral-200: #244468;
+  --color-neutral-300: #335678;
+  --color-neutral-400: #6892b0;
+  --color-neutral-500: #8bacc4;
+  --color-neutral-600: #b5cad9;
+  --color-neutral-700: #d6e1ea;
+  --color-neutral-800: #ebe5d2;
+  --color-neutral-900: #f5f0e0;
 
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
+  --color-success: #c9a84c;
+  --color-warning: #d4b35d;
+  --color-error: #e26b62;
+  --color-info: #6892b0;
 
-  --color-communication: #3b82f6;
-  --color-movement: #f59e0b;
-  --color-emotional: #ec4899;
-  --color-sensory: #8b5cf6;
-  --color-antecedent: #6b7280;
-  --color-consequence: #10b981;
+  /* Behavior category accents (slightly desaturated for dark bg) */
+  --color-communication: #6892b0;
+  --color-movement: #d4b35d;
+  --color-emotional: #d68aa6;
+  --color-sensory: #b09cd6;
+  --color-antecedent: #8bacc4;
+  --color-consequence: #c9a84c;
+
+  /* Override Tailwind defaults so legacy refs feel native to dark mode */
+  --color-white: #1a3352;
+  --color-black: #f5f0e0;
+
+  /* Type scale — bumped one step everywhere */
+  --text-xs: 0.875rem;     /*  12px → 14px */
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 1rem;         /*  14px → 16px */
+  --text-sm--line-height: 1.5rem;
+  --text-base: 1.125rem;   /*  16px → 18px */
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.25rem;      /*  18px → 20px */
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem;       /*  20px → 24px */
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.75rem;     /*  24px → 28px */
+  --text-2xl--line-height: 2.125rem;
+  --text-3xl: 2.25rem;     /*  30px → 36px */
+  --text-3xl--line-height: 2.5rem;
+  --text-4xl: 2.5rem;      /*  36px → 40px */
+  --text-4xl--line-height: 2.75rem;
 }
 
 html,
 body {
-  background: #fafaf9;
-  color: #1c1917;
+  background: #0f2035;
+  color: #f5f0e0;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(201, 168, 76, 0.35);
+  color: #f5f0e0;
+}
+
+input,
+textarea,
+select {
+  color-scheme: dark;
 }

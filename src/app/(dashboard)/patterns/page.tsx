@@ -3,6 +3,12 @@ import { redirect } from "next/navigation";
 import { PatternsView } from "@/components/patterns/PatternsView";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { buildTrends, type PatternClip } from "@/lib/patterns";
+import {
+  formatInsights,
+  searchResearch,
+  type ResearchInsight,
+} from "@/lib/research-search";
 
 export default async function PatternsPage() {
   if (!isSupabaseConfigured()) {
@@ -49,6 +55,19 @@ export default async function PatternsPage() {
     .gte("uploaded_at", since)
     .order("uploaded_at", { ascending: false });
 
+  // Find behaviors that will appear as trends (5+ occurrences) and look up insights.
+  const trends = buildTrends((clips ?? []) as PatternClip[], 4);
+  const insightLookups = await Promise.all(
+    trends.map(async (t) => {
+      const matches = await searchResearch(t.behavior, 1);
+      return [t.behavior, formatInsights(matches)] as const;
+    }),
+  );
+  const insightsByBehavior: Record<string, ResearchInsight[]> = {};
+  insightLookups.forEach(([behavior, insights]) => {
+    if (insights.length) insightsByBehavior[behavior] = insights;
+  });
+
   return (
     <div className="space-y-5">
       <header>
@@ -57,7 +76,10 @@ export default async function PatternsPage() {
           What we're seeing across {child.name}'s clips.
         </p>
       </header>
-      <PatternsView clips={clips ?? []} />
+      <PatternsView
+        clips={clips ?? []}
+        insightsByBehavior={insightsByBehavior}
+      />
     </div>
   );
 }

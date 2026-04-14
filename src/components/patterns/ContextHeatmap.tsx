@@ -71,10 +71,10 @@ export function ContextHeatmap({
                     return (
                       <td key={ctx} className="p-1">
                         <div
-                          className="flex h-12 w-16 flex-col items-center justify-center rounded text-[10px]"
+                          className="flex h-14 w-20 flex-col items-center justify-center rounded text-[12px]"
                           style={{
-                            background: `rgba(34, 197, 94, ${0.08 + intensity * 0.55})`,
-                            color: intensity > 0.5 ? "#0f3a1e" : "#44403c",
+                            background: `rgba(201, 168, 76, ${0.08 + intensity * 0.55})`,
+                            color: intensity > 0.5 ? "#0f2035" : "#f5f0e0",
                           }}
                           title={`${pct}% (${cell?.count ?? 0} clips)`}
                         >

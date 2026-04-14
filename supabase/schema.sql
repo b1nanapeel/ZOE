@@ -399,3 +399,75 @@ drop policy if exists "clips delete own" on storage.objects;
 create policy "clips delete own" on storage.objects
 for delete to authenticated
 using (bucket_id = 'clips' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- =========================================================
+-- RESEARCH KNOWLEDGE BASE (admin-only)
+-- =========================================================
+create table if not exists research_papers (
+  id text primary key default gen_random_uuid()::text,
+  title text not null,
+  authors text,
+  journal text,
+  doi text,
+  published_date text,
+  pdf_storage_path text,
+  status text not null default 'PENDING' check (status in ('PENDING', 'APPROVED', 'REJECTED')),
+  uploaded_at timestamptz not null default now(),
+  approved_at timestamptz
+);
+create index if not exists research_papers_status_idx on research_papers(status);
+
+create table if not exists research_chunks (
+  id text primary key default gen_random_uuid()::text,
+  paper_id text not null references research_papers(id) on delete cascade,
+  content text not null,
+  keywords text[] not null default '{}',
+  chunk_index int not null,
+  section_type text,
+  created_at timestamptz not null default now()
+);
+create index if not exists research_chunks_paper_idx on research_chunks(paper_id, chunk_index);
+create index if not exists research_chunks_keywords_idx on research_chunks using gin(keywords);
+create index if not exists chunks_fts on research_chunks using gin(to_tsvector('english', content));
+
+alter table research_papers enable row level security;
+alter table research_chunks enable row level security;
+
+drop policy if exists research_papers_admin on research_papers;
+create policy research_papers_admin on research_papers
+for all
+using (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com')
+with check (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com');
+
+drop policy if exists research_chunks_admin on research_chunks;
+create policy research_chunks_admin on research_chunks
+for all
+using (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com')
+with check (lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com');
+
+-- Authenticated users (the app at runtime) can read APPROVED chunks for insights.
+drop policy if exists research_chunks_read_approved on research_chunks;
+create policy research_chunks_read_approved on research_chunks
+for select to authenticated
+using (exists (select 1 from research_papers p where p.id = research_chunks.paper_id and p.status = 'APPROVED'));
+
+drop policy if exists research_papers_read_approved on research_papers;
+create policy research_papers_read_approved on research_papers
+for select to authenticated
+using (status = 'APPROVED');
+
+insert into storage.buckets (id, name, public)
+values ('research', 'research', false)
+on conflict (id) do nothing;
+
+drop policy if exists "research admin all" on storage.objects;
+create policy "research admin all" on storage.objects
+for all to authenticated
+using (
+  bucket_id = 'research'
+  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com'
+)
+with check (
+  bucket_id = 'research'
+  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'shakil.musthafa01@gmail.com'
+);

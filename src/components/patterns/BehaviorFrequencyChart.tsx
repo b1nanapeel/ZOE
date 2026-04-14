@@ -16,13 +16,13 @@ import { behaviorColor } from "@/lib/tag-helpers";
 import { PatternEmpty } from "./EmptyState";
 
 const COLOR: Record<string, string> = {
-  communication: "#3b82f6",
-  movement: "#f59e0b",
-  emotional: "#ec4899",
-  sensory: "#8b5cf6",
-  antecedent: "#6b7280",
-  consequence: "#10b981",
-  neutral: "#78716c",
+  communication: "#6892b0",
+  movement: "#d4b35d",
+  emotional: "#d68aa6",
+  sensory: "#b09cd6",
+  antecedent: "#8bacc4",
+  consequence: "#c9a84c",
+  neutral: "#8bacc4",
 };
 
 export function BehaviorFrequencyChart({
@@ -77,16 +77,24 @@ export function BehaviorFrequencyChart({
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f4" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#244468" />
                   <XAxis
                     dataKey="label"
-                    tick={{ fontSize: 12, fill: "#78716c" }}
+                    tick={{ fontSize: 14, fill: "#8bacc4" }}
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fontSize: 12, fill: "#78716c" }}
+                    tick={{ fontSize: 14, fill: "#8bacc4" }}
                   />
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#1a3352",
+                      border: "1px solid #244468",
+                      borderRadius: 8,
+                      color: "#f5f0e0",
+                    }}
+                    cursor={{ fill: "rgba(201,168,76,0.08)" }}
+                  />
                   {visibleBehaviors.map((b) => (
                     <Bar
                       key={b}

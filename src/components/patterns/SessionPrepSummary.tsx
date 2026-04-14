@@ -15,13 +15,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { SessionPrepSummary } from "@/lib/session-prep";
+import type { ResearchInsight } from "@/lib/research-search";
+import { ResearchInsightList } from "@/components/research/ResearchInsightCard";
 
 export function SessionPrepSummary({
   childName,
   summary,
+  researchInsights = [],
 }: {
   childName: string;
   summary: SessionPrepSummary;
+  researchInsights?: ResearchInsight[];
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -130,7 +134,7 @@ export function SessionPrepSummary({
                     : ArrowRight;
               const tone =
                 t.direction === "increasing"
-                  ? "text-emerald-600"
+                  ? "text-secondary-700"
                   : t.direction === "decreasing"
                     ? "text-red-600"
                     : "text-neutral-500";
@@ -203,6 +207,19 @@ export function SessionPrepSummary({
           </p>
         )}
       </Section>
+
+      {researchInsights.length > 0 && (
+        <Section title="Research context">
+          <ResearchInsightList
+            insights={researchInsights}
+            behavioralQuery={summary.topBehaviors
+              .slice(0, 3)
+              .map((b) => b.behavior)
+              .join(" ")}
+            pageContext="session-prep"
+          />
+        </Section>
+      )}
 
       <Button variant="secondary" block onClick={copy}>
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

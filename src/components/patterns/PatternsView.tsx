@@ -13,6 +13,7 @@ import { ContextHeatmap } from "./ContextHeatmap";
 import { TrendList } from "./TrendList";
 import { CommunicationLog } from "./CommunicationLog";
 import { cn } from "@/lib/utils";
+import type { ResearchInsight } from "@/lib/research-search";
 
 const TABS = [
   { id: "frequency", label: "Frequency" },
@@ -22,7 +23,13 @@ const TABS = [
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
-export function PatternsView({ clips }: { clips: PatternClip[] }) {
+export function PatternsView({
+  clips,
+  insightsByBehavior = {},
+}: {
+  clips: PatternClip[];
+  insightsByBehavior?: Record<string, ResearchInsight[]>;
+}) {
   const [tab, setTab] = useState<TabId>("frequency");
   const [weeks, setWeeks] = useState(8);
 
@@ -73,7 +80,9 @@ export function PatternsView({ clips }: { clips: PatternClip[] }) {
         />
       )}
       {tab === "context" && <ContextHeatmap matrices={matrices} />}
-      {tab === "trends" && <TrendList trends={trends} />}
+      {tab === "trends" && (
+        <TrendList trends={trends} insightsByBehavior={insightsByBehavior} />
+      )}
       {tab === "communication" && <CommunicationLog weeks={communication} />}
     </div>
   );

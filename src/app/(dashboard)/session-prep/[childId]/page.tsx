@@ -5,6 +5,7 @@ import { SessionPrepSummary as SessionPrepUI } from "@/components/patterns/Sessi
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { loadSessionPrep } from "@/lib/session-prep-server";
+import { formatInsights, searchResearch } from "@/lib/research-search";
 
 export default async function SessionPrepPage({
   params,
@@ -35,6 +36,14 @@ export default async function SessionPrepPage({
   );
   if (!authorized || !summary || !childName) notFound();
 
+  const topBehaviorQuery = summary.topBehaviors
+    .slice(0, 3)
+    .map((b) => b.behavior)
+    .join(" ");
+  const insights = topBehaviorQuery
+    ? formatInsights(await searchResearch(topBehaviorQuery, 3))
+    : [];
+
   return (
     <div className="space-y-5">
       <Link
@@ -51,7 +60,11 @@ export default async function SessionPrepPage({
           Last 7 days for {childName}.
         </p>
       </header>
-      <SessionPrepUI childName={childName} summary={summary} />
+      <SessionPrepUI
+        childName={childName}
+        summary={summary}
+        researchInsights={insights}
+      />
     </div>
   );
 }

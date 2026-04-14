@@ -40,7 +40,7 @@ export function CommunicationLog({ weeks }: { weeks: CommunicationWeek[] }) {
         <p
           className={`mt-1 text-xs font-medium ${
             delta > 0
-              ? "text-emerald-600"
+              ? "text-secondary-700"
               : delta < 0
                 ? "text-red-600"
                 : "text-neutral-500"
@@ -55,36 +55,44 @@ export function CommunicationLog({ weeks }: { weeks: CommunicationWeek[] }) {
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weeks}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f4" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#244468" />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12, fill: "#78716c" }}
+                tick={{ fontSize: 14, fill: "#8bacc4" }}
               />
               <YAxis
                 allowDecimals={false}
-                tick={{ fontSize: 12, fill: "#78716c" }}
+                tick={{ fontSize: 14, fill: "#8bacc4" }}
               />
-              <Tooltip />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{
+                  background: "#1a3352",
+                  border: "1px solid #244468",
+                  borderRadius: 8,
+                  color: "#f5f0e0",
+                }}
+                cursor={{ stroke: "#c9a84c", strokeOpacity: 0.3 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 14, color: "#b5cad9" }} />
               <Line
                 type="monotone"
                 dataKey="vocalized"
                 name="Vocalized"
-                stroke="#3b82f6"
+                stroke="#6892b0"
                 strokeWidth={2}
               />
               <Line
                 type="monotone"
                 dataKey="gestured"
                 name="Gesture / eye contact"
-                stroke="#22c55e"
+                stroke="#c9a84c"
                 strokeWidth={2}
               />
               <Line
                 type="monotone"
                 dataKey="aac"
                 name="AAC"
-                stroke="#a855f7"
+                stroke="#b09cd6"
                 strokeWidth={2}
               />
             </LineChart>

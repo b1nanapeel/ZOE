@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Document and understand your child's behavioral moments over time.",
     start_url: "/",
     display: "standalone",
-    background_color: "#fafaf9",
-    theme_color: "#22c55e",
+    background_color: "#0f2035",
+    theme_color: "#0f2035",
     orientation: "portrait",
     icons: [
       {

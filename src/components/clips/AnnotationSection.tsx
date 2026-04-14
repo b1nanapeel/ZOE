@@ -44,7 +44,7 @@ export function AnnotationSection({
                   <span>·</span>
                   <span>{format(new Date(a.created_at), "MMM d, h:mm a")}</span>
                   {a.is_private && (
-                    <span className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-600">
+                    <span className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-neutral-100 px-1.5 py-0.5 text-[12px] font-medium text-neutral-600">
                       <Lock className="h-2.5 w-2.5" />
                       Private
                     </span>

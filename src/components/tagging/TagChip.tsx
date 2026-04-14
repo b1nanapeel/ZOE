@@ -33,8 +33,8 @@ const STYLES: Record<TagCategoryColor, { selected: string; unselected: string }>
     unselected: "bg-neutral-100 text-neutral-600 hover:bg-violet-50",
   },
   consequence: {
-    selected: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500/40",
-    unselected: "bg-neutral-100 text-neutral-600 hover:bg-emerald-50",
+    selected: "bg-secondary-50 text-secondary-700 ring-1 ring-secondary-500/40",
+    unselected: "bg-neutral-100 text-neutral-600 hover:bg-secondary-50",
   },
   neutral: {
     selected: "bg-primary-100 text-primary-700 ring-1 ring-primary-500/40",

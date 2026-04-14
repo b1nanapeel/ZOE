@@ -15,7 +15,7 @@ const ITEMS = [
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="sticky bottom-0 z-30 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)]">
+    <nav className="sticky bottom-0 z-30 border-t border-neutral-200 bg-neutral-50/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
       <ul className="grid grid-cols-4 h-16">
         {ITEMS.map((item) => {
           const active =
@@ -29,7 +29,7 @@ export function BottomNav() {
                 href={item.href}
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium",
-                  active ? "text-primary-600" : "text-neutral-400",
+                  active ? "text-primary-500" : "text-neutral-500",
                 )}
               >
                 <Icon className="h-5 w-5" />

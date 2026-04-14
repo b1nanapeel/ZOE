@@ -15,6 +15,7 @@ import {
   ExportButton,
   DeleteAccountButton,
 } from "@/components/profile/AccountActions";
+import { ShowInsightsToggle } from "@/components/research/InsightsToggle";
 
 export default async function ProfilePage() {
   if (!isSupabaseConfigured()) {
@@ -98,6 +99,13 @@ export default async function ProfilePage() {
           }
         />
       </nav>
+
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          Preferences
+        </h3>
+        <ShowInsightsToggle />
+      </section>
 
       <section className="space-y-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
