@@ -3,9 +3,10 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { createProxySupabase } from "@/lib/supabase-proxy";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 
-const PUBLIC_PATHS = ["/login", "/signup"];
-const AUTH_PATHS = ["/login", "/signup"];
+const PUBLIC_PATHS = ["/welcome", "/login", "/signup"];
+const AUTH_PATHS = ["/welcome", "/login", "/signup"];
 const TERMS_EXEMPT_PATHS = [
+  "/welcome",
   "/login",
   "/signup",
   "/onboarding",
@@ -57,7 +58,7 @@ export async function proxy(request: NextRequest) {
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/welcome";
     return NextResponse.redirect(url);
   }
 
