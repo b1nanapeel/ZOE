@@ -61,16 +61,8 @@ export default function WelcomePage() {
             See what your child is telling you
           </p>
 
-          <a
-            href="#problem"
-            className="mt-14 inline-flex items-center justify-center rounded-full px-10 py-4 text-base font-medium tracking-wide transition hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(201,168,76,0.35)]"
-            style={{ backgroundColor: COLORS.gold, color: COLORS.bg }}
-          >
-            Get Started
-          </a>
-
           <p
-            className="mt-6 text-xs"
+            className="mt-14 text-xs"
             style={{ color: COLORS.cream, opacity: 0.55 }}
           >
             Already have an account?{" "}
