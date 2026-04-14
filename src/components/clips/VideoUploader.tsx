@@ -67,6 +67,9 @@ export function VideoUploader({
 
     try {
       const durationSeconds = await readDuration(file);
+      if (durationSeconds > 120) {
+        throw new Error("Video must be 2 minutes or shorter.");
+      }
       setProgress(15);
 
       const res = await fetch("/api/clips/upload-url", {

@@ -9,7 +9,6 @@ import { markMinuteFull } from "./gemini-rate-limiter";
 const GEMINI_ENDPOINT =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 const TIMEOUT_MS = 30_000;
-const MAX_BYTES = 20 * 1024 * 1024; // 20MB free-tier inline cap
 
 const ALL_BEHAVIORS: string[] = (
   Object.values(BEHAVIOR_TAGS) as ReadonlyArray<readonly string[]>
@@ -47,26 +46,21 @@ function intersect(a: string[], allowed: readonly string[]): string[] {
   return [...new Set(a.filter((x) => typeof x === "string" && set.has(x)))];
 }
 
-async function downloadAsBase64(
+async function detectMimeType(
   videoUrl: string,
   signal: AbortSignal,
-): Promise<{ base64: string; mimeType: string }> {
-  const res = await fetch(videoUrl, { signal });
-  if (!res.ok) throw new Error(`Video download failed (${res.status})`);
-  const lengthHeader = res.headers.get("content-length");
-  if (lengthHeader && Number(lengthHeader) > MAX_BYTES) {
-    throw new Error("Video too large for inline analysis");
+): Promise<string> {
+  try {
+    const res = await fetch(videoUrl, { method: "HEAD", signal });
+    const ct = res.headers.get("content-type");
+    if (ct && ct.startsWith("video/")) return ct.split(";")[0].trim();
+  } catch {
+    // fall through to default
   }
-  const buffer = Buffer.from(await res.arrayBuffer());
-  if (buffer.byteLength > MAX_BYTES) {
-    throw new Error("Video too large for inline analysis");
-  }
-  const mimeType = res.headers.get("content-type") || "video/mp4";
-  return { base64: buffer.toString("base64"), mimeType };
+  return "video/mp4";
 }
 
 function parseJsonText(text: string): Record<string, unknown> | null {
-  // Gemini sometimes wraps JSON in ``` fences even with responseMimeType set.
   const cleaned = text
     .trim()
     .replace(/^```(?:json)?\s*/i, "")
@@ -94,10 +88,7 @@ export async function analyzeVideoWithGemini(
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const { base64, mimeType } = await downloadAsBase64(
-      videoUrl,
-      controller.signal,
-    );
+    const mimeType = await detectMimeType(videoUrl, controller.signal);
 
     const body = {
       contents: [
@@ -105,7 +96,7 @@ export async function analyzeVideoWithGemini(
           role: "user",
           parts: [
             { text: PROMPT },
-            { inline_data: { mime_type: mimeType, data: base64 } },
+            { fileData: { fileUri: videoUrl, mimeType } },
           ],
         },
       ],
