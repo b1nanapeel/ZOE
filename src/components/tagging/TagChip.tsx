@@ -48,12 +48,14 @@ export function TagChip({
   onClick,
   category = "neutral",
   size = "md",
+  aiSuggested = false,
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
   category?: TagCategoryColor;
   size?: "md" | "sm";
+  aiSuggested?: boolean;
 }) {
   const style = STYLES[category];
   return (
@@ -61,12 +63,22 @@ export function TagChip({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
+      title={aiSuggested ? "AI suggested — tap to keep or remove" : undefined}
       className={cn(
-        "rounded-full font-medium transition-all",
+        "inline-flex items-center gap-1 rounded-full font-medium transition-all",
         size === "md" ? "h-8 px-3 text-sm" : "h-6 px-2 text-xs",
         selected ? style.selected : style.unselected,
+        aiSuggested && selected && "ring-1 ring-primary-500/60",
       )}
     >
+      {aiSuggested && (
+        <span
+          aria-hidden
+          className="text-[10px] leading-none text-primary-500"
+        >
+          ✦
+        </span>
+      )}
       {label}
     </button>
   );

@@ -71,6 +71,11 @@ create table if not exists clips (
 create index if not exists clips_child_uploaded_idx on clips(child_id, uploaded_at desc);
 create index if not exists clips_child_deleted_idx on clips(child_id, is_deleted);
 
+alter table clips add column if not exists ai_observation text;
+alter table clips add column if not exists ai_confidence float;
+alter table clips add column if not exists audio_features jsonb;
+alter table clips add column if not exists movement_features jsonb;
+
 create table if not exists clip_tags (
   id text primary key default gen_random_uuid()::text,
   clip_id text not null references clips(id) on delete cascade,

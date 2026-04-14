@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { UploadFlow } from "@/components/clips/UploadFlow";
+import { AiStatusBadge } from "@/components/shared/AiStatusBadge";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
 
@@ -47,12 +48,15 @@ export default async function NewClipPage() {
 
   return (
     <div>
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900"
-      >
-        <ArrowLeft className="h-4 w-4" /> Cancel
-      </Link>
+      <div className="mb-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-neutral-600 hover:text-neutral-900"
+        >
+          <ArrowLeft className="h-4 w-4" /> Cancel
+        </Link>
+        <AiStatusBadge />
+      </div>
       <UploadFlow childId={child.id} childName={child.name} />
     </div>
   );

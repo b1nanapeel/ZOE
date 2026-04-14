@@ -6,6 +6,14 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { loadSessionPrep } from "@/lib/session-prep-server";
 import { formatInsights, searchResearch } from "@/lib/research-search";
+import {
+  buildIntelligenceReport,
+  type IntelligenceClip,
+} from "@/lib/pattern-intelligence";
+import {
+  InsightsSection,
+  TherapistSummaryBlock,
+} from "@/components/insights/InsightsSection";
 
 export default async function SessionPrepPage({
   params,
@@ -44,6 +52,19 @@ export default async function SessionPrepPage({
     ? formatInsights(await searchResearch(topBehaviorQuery, 3))
     : [];
 
+  const { data: intelClips } = await supabase
+    .from("clips")
+    .select(
+      "uploaded_at, behaviors, antecedents, location, time_context, people_present, mood_before, audio_features, movement_features",
+    )
+    .eq("child_id", childId)
+    .eq("is_deleted", false)
+    .order("uploaded_at", { ascending: false })
+    .limit(500);
+  const intelligence = buildIntelligenceReport(
+    (intelClips ?? []) as IntelligenceClip[],
+  );
+
   return (
     <div className="space-y-5">
       <Link
@@ -65,6 +86,14 @@ export default async function SessionPrepPage({
         summary={summary}
         researchInsights={insights}
       />
+
+      <InsightsSection report={intelligence} />
+
+      {intelligence.hasEnoughData && (
+        <TherapistSummaryBlock
+          paragraphs={intelligence.therapistSummary.paragraphs}
+        />
+      )}
     </div>
   );
 }

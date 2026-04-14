@@ -5,6 +5,14 @@ import { Film, Upload, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StepShell } from "@/components/tagging/StepShell";
 import { createClient } from "@/lib/supabase-browser";
+import {
+  extractAudioFeatures,
+  type AudioFeatures,
+} from "@/lib/audio-analysis";
+import {
+  extractMovementFeatures,
+  type MovementFeatures,
+} from "@/lib/movement-analysis";
 
 export interface UploadedVideo {
   videoPath: string;
@@ -12,6 +20,8 @@ export interface UploadedVideo {
   fileSizeBytes: number;
   previewUrl: string;
   fileName: string;
+  audioFeatures: AudioFeatures | null;
+  movementFeatures: MovementFeatures | null;
 }
 
 async function readDuration(file: File): Promise<number> {
@@ -78,6 +88,11 @@ export function VideoUploader({
 
       setProgress(40);
       const supabase = createClient();
+
+      // Run audio + movement extraction in parallel with the upload.
+      const audioPromise = extractAudioFeatures(file).catch(() => null);
+      const movementPromise = extractMovementFeatures(file).catch(() => null);
+
       const { error: uploadError } = await supabase.storage
         .from("clips")
         .uploadToSignedUrl(path, token, file, {
@@ -85,6 +100,12 @@ export function VideoUploader({
           upsert: false,
         });
       if (uploadError) throw new Error(uploadError.message);
+      setProgress(80);
+
+      const [audioFeatures, movementFeatures] = await Promise.all([
+        audioPromise,
+        movementPromise,
+      ]);
       setProgress(95);
 
       onUploaded({
@@ -93,6 +114,8 @@ export function VideoUploader({
         fileSizeBytes: file.size,
         previewUrl: URL.createObjectURL(file),
         fileName: file.name,
+        audioFeatures,
+        movementFeatures,
       });
       setProgress(100);
     } catch (e) {

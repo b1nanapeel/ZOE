@@ -12,6 +12,7 @@ export function ConsequenceStep({
   onBack,
   stepIndex,
   totalSteps,
+  aiSuggested = new Set(),
 }: {
   selected: string[];
   note: string;
@@ -20,6 +21,7 @@ export function ConsequenceStep({
   onBack: () => void;
   stepIndex: number;
   totalSteps: number;
+  aiSuggested?: Set<string>;
 }) {
   function toggle(tag: string) {
     onChange({
@@ -47,6 +49,7 @@ export function ConsequenceStep({
             selected={selected.includes(t)}
             onClick={() => toggle(t)}
             category="consequence"
+            aiSuggested={aiSuggested.has(t)}
           />
         ))}
       </ChipGrid>

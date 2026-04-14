@@ -20,6 +20,7 @@ export function BehaviorStep({
   onBack,
   stepIndex,
   totalSteps,
+  aiSuggested = new Set(),
 }: {
   childName: string;
   selected: string[];
@@ -29,6 +30,7 @@ export function BehaviorStep({
   onBack: () => void;
   stepIndex: number;
   totalSteps: number;
+  aiSuggested?: Set<string>;
 }) {
   function toggle(tag: string) {
     onChange({
@@ -63,6 +65,7 @@ export function BehaviorStep({
                     selected={selected.includes(t)}
                     onClick={() => toggle(t)}
                     category={CATEGORY_COLORS[group]}
+                    aiSuggested={aiSuggested.has(t)}
                   />
                 ))}
               </ChipGrid>

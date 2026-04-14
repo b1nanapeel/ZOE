@@ -3,6 +3,12 @@ import { formatDistanceToNow } from "date-fns";
 import { Sparkles, MapPin, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { UploadButton } from "@/components/clips/UploadButton";
+import { AiStatusBadge } from "@/components/shared/AiStatusBadge";
+import { InsightHighlights } from "@/components/insights/InsightHighlights";
+import {
+  buildIntelligenceReport,
+  type IntelligenceClip,
+} from "@/lib/pattern-intelligence";
 import {
   SessionPrepBanner,
   computeUpcomingTherapy,
@@ -30,6 +36,7 @@ interface Ctx {
   recentClips: RecentClip[];
   activeMissions: MissionData[];
   upcoming: ReturnType<typeof computeUpcomingTherapy>;
+  highlights: ReturnType<typeof buildIntelligenceReport>["topInsights"];
 }
 
 async function getContext(): Promise<Ctx> {
@@ -41,6 +48,7 @@ async function getContext(): Promise<Ctx> {
     recentClips: [],
     activeMissions: [],
     upcoming: null,
+    highlights: [],
   };
   if (!isSupabaseConfigured()) return fallback;
 
@@ -117,6 +125,19 @@ async function getContext(): Promise<Ctx> {
 
   const upcoming = computeUpcomingTherapy(child.id, schedules ?? []);
 
+  const { data: intelClipsRaw } = await supabase
+    .from("clips")
+    .select(
+      "uploaded_at, behaviors, antecedents, location, time_context, people_present, mood_before, audio_features, movement_features",
+    )
+    .eq("child_id", child.id)
+    .eq("is_deleted", false)
+    .order("uploaded_at", { ascending: false })
+    .limit(500);
+  const report = buildIntelligenceReport(
+    (intelClipsRaw ?? []) as IntelligenceClip[],
+  );
+
   return {
     name: greetingName,
     child,
@@ -125,6 +146,7 @@ async function getContext(): Promise<Ctx> {
     recentClips: (recent ?? []) as RecentClip[],
     activeMissions: (missions ?? []) as MissionData[],
     upcoming,
+    highlights: report.topInsights,
   };
 }
 
@@ -144,6 +166,7 @@ export default async function HomePage() {
     recentClips,
     activeMissions,
     upcoming,
+    highlights,
   } = await getContext();
   const isEmpty = recentClips.length === 0;
 
@@ -159,9 +182,14 @@ export default async function HomePage() {
             story.
           </p>
         )}
+        <div className="mt-2">
+          <AiStatusBadge />
+        </div>
       </header>
 
       {upcoming && <SessionPrepBanner upcoming={upcoming} />}
+
+      <InsightHighlights insights={highlights} />
 
       {activeMissions.length > 0 && (
         <section>

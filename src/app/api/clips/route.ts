@@ -22,6 +22,10 @@ const ClipSchema = z.object({
   parentInterpretation: z.string().nullish(),
   parentFeeling: z.string().nullish(),
   recordedAt: z.string().nullish(),
+  aiObservation: z.string().nullish(),
+  aiConfidence: z.number().nullish(),
+  audioFeatures: z.record(z.string(), z.unknown()).nullish(),
+  movementFeatures: z.record(z.string(), z.unknown()).nullish(),
 });
 
 export async function POST(request: Request) {
@@ -77,6 +81,10 @@ export async function POST(request: Request) {
       parent_interpretation: v.parentInterpretation ?? null,
       parent_feeling: v.parentFeeling ?? null,
       recorded_at: v.recordedAt ?? null,
+      ai_observation: v.aiObservation ?? null,
+      ai_confidence: v.aiConfidence ?? null,
+      audio_features: v.audioFeatures ?? null,
+      movement_features: v.movementFeatures ?? null,
     })
     .select("id")
     .single();

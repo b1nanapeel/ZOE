@@ -8,6 +8,11 @@ import {
   type AnnotationRow,
 } from "@/components/clips/AnnotationSection";
 import { ResearchInsightList } from "@/components/research/ResearchInsightCard";
+import { AiObservationCard } from "@/components/clips/AiObservationCard";
+import { SoundProfileCard } from "@/components/clips/SoundProfileCard";
+import { MovementProfileCard } from "@/components/clips/MovementProfileCard";
+import type { AudioFeatures } from "@/lib/audio-analysis";
+import type { MovementFeatures } from "@/lib/movement-analysis";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { formatInsights, searchResearch } from "@/lib/research-search";
@@ -29,7 +34,7 @@ export default async function ClipDetailPage({
   const { data: clip } = await supabase
     .from("clips")
     .select(
-      "id, child_id, uploaded_at, recorded_at, duration_seconds, video_url, antecedents, antecedent_note, behaviors, behavior_note, consequences, consequence_note, location, time_context, people_present, mood_before, parent_interpretation, parent_feeling",
+      "id, child_id, uploaded_at, recorded_at, duration_seconds, video_url, antecedents, antecedent_note, behaviors, behavior_note, consequences, consequence_note, location, time_context, people_present, mood_before, parent_interpretation, parent_feeling, ai_observation, ai_confidence, audio_features, movement_features",
     )
     .eq("id", clipId)
     .eq("is_deleted", false)
@@ -77,6 +82,22 @@ export default async function ClipDetailPage({
         <ArrowLeft className="h-4 w-4" /> Timeline
       </Link>
       <ClipDetail clip={clip} videoUrl={videoUrl} />
+      {clip.ai_observation && (
+        <AiObservationCard
+          observation={clip.ai_observation}
+          confidence={clip.ai_confidence ?? null}
+        />
+      )}
+      {clip.audio_features && (
+        <SoundProfileCard
+          features={clip.audio_features as AudioFeatures}
+        />
+      )}
+      {clip.movement_features && (
+        <MovementProfileCard
+          features={clip.movement_features as MovementFeatures}
+        />
+      )}
       {insights.length > 0 && (
         <section>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">

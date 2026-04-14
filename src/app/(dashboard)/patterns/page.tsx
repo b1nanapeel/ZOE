@@ -9,6 +9,22 @@ import {
   searchResearch,
   type ResearchInsight,
 } from "@/lib/research-search";
+import {
+  buildIntelligenceReport,
+  type IntelligenceClip,
+} from "@/lib/pattern-intelligence";
+import {
+  InsightsSection,
+  TherapistSummaryBlock,
+} from "@/components/insights/InsightsSection";
+import {
+  VocalizationTrends,
+  type VocalizationPoint,
+} from "@/components/patterns/VocalizationTrends";
+import {
+  MovementTrends,
+  type MovementPoint,
+} from "@/components/patterns/MovementTrends";
 
 export default async function PatternsPage() {
   if (!isSupabaseConfigured()) {
@@ -49,11 +65,17 @@ export default async function PatternsPage() {
 
   const { data: clips } = await supabase
     .from("clips")
-    .select("uploaded_at, behaviors, antecedents, location")
+    .select(
+      "uploaded_at, behaviors, antecedents, location, time_context, people_present, mood_before, audio_features, movement_features",
+    )
     .eq("child_id", child.id)
     .eq("is_deleted", false)
     .gte("uploaded_at", since)
     .order("uploaded_at", { ascending: false });
+
+  const intelligence = buildIntelligenceReport(
+    (clips ?? []) as IntelligenceClip[],
+  );
 
   // Find behaviors that will appear as trends (5+ occurrences) and look up insights.
   const trends = buildTrends((clips ?? []) as PatternClip[], 4);
@@ -80,6 +102,17 @@ export default async function PatternsPage() {
         clips={clips ?? []}
         insightsByBehavior={insightsByBehavior}
       />
+
+      <VocalizationTrends clips={(clips ?? []) as VocalizationPoint[]} />
+      <MovementTrends clips={(clips ?? []) as MovementPoint[]} />
+
+      <InsightsSection report={intelligence} />
+
+      {intelligence.hasEnoughData && (
+        <TherapistSummaryBlock
+          paragraphs={intelligence.therapistSummary.paragraphs}
+        />
+      )}
     </div>
   );
 }

@@ -12,6 +12,7 @@ export function AntecedentStep({
   onBack,
   stepIndex,
   totalSteps,
+  aiSuggested = new Set(),
 }: {
   selected: string[];
   note: string;
@@ -20,6 +21,7 @@ export function AntecedentStep({
   onBack: () => void;
   stepIndex: number;
   totalSteps: number;
+  aiSuggested?: Set<string>;
 }) {
   function toggle(tag: string) {
     onChange({
@@ -47,6 +49,7 @@ export function AntecedentStep({
             selected={selected.includes(t)}
             onClick={() => toggle(t)}
             category="antecedent"
+            aiSuggested={aiSuggested.has(t)}
           />
         ))}
       </ChipGrid>

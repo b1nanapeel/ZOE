@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { AntecedentStep } from "@/components/tagging/AntecedentStep";
@@ -17,6 +17,7 @@ import { VideoUploader, type UploadedVideo } from "./VideoUploader";
 
 const STEPS = [
   "upload",
+  "analyzing",
   "antecedent",
   "behavior",
   "consequence",
@@ -25,7 +26,24 @@ const STEPS = [
   "saved",
 ] as const;
 type Step = (typeof STEPS)[number];
-const TOTAL = STEPS.length - 1; // exclude "saved" from progress
+const PROGRESS_STEPS: Step[] = [
+  "upload",
+  "antecedent",
+  "behavior",
+  "consequence",
+  "context",
+  "reflection",
+];
+const TOTAL = PROGRESS_STEPS.length;
+
+interface AiResult {
+  suggestedBehaviors: string[];
+  suggestedAntecedents: string[];
+  suggestedConsequences: string[];
+  suggestedMood: string | null;
+  confidence: number;
+  narrativeObservation: string;
+}
 
 interface State {
   video: UploadedVideo | null;
@@ -37,6 +55,12 @@ interface State {
   consequenceNote: string;
   context: ContextValues;
   reflection: ReflectionValues;
+  ai: AiResult | null;
+  aiSuggested: {
+    antecedents: Set<string>;
+    behaviors: Set<string>;
+    consequences: Set<string>;
+  };
 }
 
 const INITIAL: State = {
@@ -54,6 +78,12 @@ const INITIAL: State = {
     moodBefore: "",
   },
   reflection: { parentInterpretation: "", parentFeeling: "" },
+  ai: null,
+  aiSuggested: {
+    antecedents: new Set(),
+    behaviors: new Set(),
+    consequences: new Set(),
+  },
 };
 
 export function UploadFlow({
@@ -70,11 +100,73 @@ export function UploadFlow({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const idx = STEPS.indexOf(step);
+  const progressIdx = PROGRESS_STEPS.indexOf(step);
+  const progressShown = progressIdx >= 0 ? progressIdx : 0;
 
   function go(next: Step) {
     setError(null);
     setStep(next);
+  }
+
+  async function runAiAnalysis(video: UploadedVideo) {
+    try {
+      const statusRes = await fetch("/api/ai-status", { cache: "no-store" });
+      const status = (await statusRes.json().catch(() => null)) as {
+        available?: boolean;
+        configured?: boolean;
+      } | null;
+
+      if (!status?.available) {
+        if (status?.configured === false) {
+          // No key configured at all — silent.
+        } else {
+          toast({
+            title: "AI analysis is resting",
+            description:
+              "Tag this clip yourself and ZOE will analyze future clips when available.",
+          });
+        }
+        go("antecedent");
+        return;
+      }
+
+      go("analyzing");
+
+      const res = await fetch("/api/clips/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoPath: video.videoPath }),
+      });
+      const body = (await res.json().catch(() => null)) as {
+        suggestions?: AiResult;
+      } | null;
+
+      if (body?.suggestions) {
+        const ai = body.suggestions;
+        setState((s) => ({
+          ...s,
+          ai,
+          antecedents: [...new Set([...s.antecedents, ...ai.suggestedAntecedents])],
+          behaviors: [...new Set([...s.behaviors, ...ai.suggestedBehaviors])],
+          consequences: [
+            ...new Set([...s.consequences, ...ai.suggestedConsequences]),
+          ],
+          context: {
+            ...s.context,
+            moodBefore: s.context.moodBefore || (ai.suggestedMood ?? ""),
+          },
+          aiSuggested: {
+            antecedents: new Set(ai.suggestedAntecedents),
+            behaviors: new Set(ai.suggestedBehaviors),
+            consequences: new Set(ai.suggestedConsequences),
+          },
+        }));
+      }
+    } catch {
+      // Silent — never block the upload flow.
+    } finally {
+      go("antecedent");
+    }
   }
 
   async function save() {
@@ -102,6 +194,10 @@ export function UploadFlow({
           moodBefore: state.context.moodBefore || null,
           parentInterpretation: state.reflection.parentInterpretation || null,
           parentFeeling: state.reflection.parentFeeling || null,
+          aiObservation: state.ai?.narrativeObservation || null,
+          aiConfidence: state.ai?.confidence ?? null,
+          audioFeatures: state.video.audioFeatures ?? null,
+          movementFeatures: state.video.movementFeatures ?? null,
         }),
       });
       if (!res.ok) {
@@ -125,7 +221,7 @@ export function UploadFlow({
   if (step === "saved") {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-500/15 text-primary-500">
           <CheckCircle2 className="h-8 w-8" />
         </div>
         <h2 className="mt-4 text-xl font-semibold text-neutral-900">
@@ -159,14 +255,31 @@ export function UploadFlow({
     );
   }
 
+  if (step === "analyzing") {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+        <div className="relative flex h-16 w-16 items-center justify-center">
+          <span className="absolute inset-0 animate-ping rounded-full bg-primary-500/20" />
+          <Sparkles className="relative h-8 w-8 text-primary-500" />
+        </div>
+        <h2 className="mt-4 text-xl font-semibold text-neutral-900">
+          ZOE is watching…
+        </h2>
+        <p className="mt-2 text-sm text-neutral-500">
+          Pre-tagging what we can observe. You'll review and edit next.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       {step === "upload" && (
         <VideoUploader
           uploaded={state.video}
           onUploaded={(v) => setState({ ...state, video: v })}
-          onNext={() => go("antecedent")}
-          stepIndex={idx}
+          onNext={() => state.video && runAiAnalysis(state.video)}
+          stepIndex={progressShown}
           totalSteps={TOTAL}
         />
       )}
@@ -175,12 +288,17 @@ export function UploadFlow({
           selected={state.antecedents}
           note={state.antecedentNote}
           onChange={(c) =>
-            setState({ ...state, antecedents: c.selected, antecedentNote: c.note })
+            setState({
+              ...state,
+              antecedents: c.selected,
+              antecedentNote: c.note,
+            })
           }
           onNext={() => go("behavior")}
           onBack={() => go("upload")}
-          stepIndex={idx}
+          stepIndex={progressShown}
           totalSteps={TOTAL}
+          aiSuggested={state.aiSuggested.antecedents}
         />
       )}
       {step === "behavior" && (
@@ -193,8 +311,9 @@ export function UploadFlow({
           }
           onNext={() => go("consequence")}
           onBack={() => go("antecedent")}
-          stepIndex={idx}
+          stepIndex={progressShown}
           totalSteps={TOTAL}
+          aiSuggested={state.aiSuggested.behaviors}
         />
       )}
       {step === "consequence" && (
@@ -210,8 +329,9 @@ export function UploadFlow({
           }
           onNext={() => go("context")}
           onBack={() => go("behavior")}
-          stepIndex={idx}
+          stepIndex={progressShown}
           totalSteps={TOTAL}
+          aiSuggested={state.aiSuggested.consequences}
         />
       )}
       {step === "context" && (
@@ -221,7 +341,7 @@ export function UploadFlow({
           onNext={() => go("reflection")}
           onSkip={() => go("reflection")}
           onBack={() => go("consequence")}
-          stepIndex={idx}
+          stepIndex={progressShown}
           totalSteps={TOTAL}
         />
       )}
@@ -233,7 +353,7 @@ export function UploadFlow({
           onSkip={save}
           onBack={() => go("context")}
           saving={saving}
-          stepIndex={idx}
+          stepIndex={progressShown}
           totalSteps={TOTAL}
         />
       )}
