@@ -28,7 +28,7 @@ export function StepShell({
   totalSteps: number;
 }) {
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+    <div className="flex flex-col min-h-[calc(100dvh-4rem)]">
       <div className="mb-6">
         <div className="flex gap-1.5">
           {Array.from({ length: totalSteps }).map((_, i) => (

@@ -18,6 +18,7 @@ const displayFont = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   style: ["italic", "normal"],
+  display: "swap",
 });
 
 const COLORS = {
@@ -30,11 +31,11 @@ const COLORS = {
 export default function WelcomePage() {
   return (
     <main
-      className="min-h-screen scroll-smooth"
+      className="min-h-[100dvh] scroll-smooth"
       style={{ backgroundColor: COLORS.bg, color: COLORS.cream }}
     >
       {/* ============ HERO ============ */}
-      <section className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
+      <section className="flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
         <div className="animate-zoe-fade-in flex flex-col items-center">
           <h1
             className={`${displayFont.className} italic`}

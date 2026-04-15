@@ -30,15 +30,19 @@ async function readDuration(file: File): Promise<number> {
     const v = document.createElement("video");
     v.preload = "metadata";
     v.src = url;
-    v.onloadedmetadata = () => {
-      const d = isFinite(v.duration) ? Math.round(v.duration) : 0;
+    let settled = false;
+    const finish = (d: number) => {
+      if (settled) return;
+      settled = true;
       URL.revokeObjectURL(url);
       resolve(d);
     };
-    v.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve(0);
+    v.onloadedmetadata = () => {
+      finish(isFinite(v.duration) ? Math.round(v.duration) : 0);
     };
+    v.onerror = () => finish(0);
+    // Some mobile browsers never fire loadedmetadata reliably — proceed anyway.
+    setTimeout(() => finish(0), 5000);
   });
 }
 
@@ -67,7 +71,9 @@ export function VideoUploader({
 
     try {
       const durationSeconds = await readDuration(file);
-      if (durationSeconds > 120) {
+      // durationSeconds === 0 means metadata didn't load (some mobile browsers);
+      // skip the length cap rather than blocking the upload.
+      if (durationSeconds > 0 && durationSeconds > 120) {
         throw new Error("Video must be 2 minutes or shorter.");
       }
       setProgress(15);
@@ -141,7 +147,7 @@ export function VideoUploader({
       <input
         ref={fileInputRef}
         type="file"
-        accept="video/*"
+        accept="video/*,video/mp4,video/quicktime,video/webm,video/3gpp,video/x-matroska"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -193,6 +199,9 @@ export function VideoUploader({
             src={uploaded.previewUrl}
             controls
             playsInline
+            preload="metadata"
+            controlsList="nodownload"
+            {...({ "webkit-playsinline": "true" } as Record<string, string>)}
             className="w-full rounded-lg bg-black"
           />
           <div className="mt-3 flex items-center justify-between gap-3">

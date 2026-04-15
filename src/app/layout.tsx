@@ -5,11 +5,13 @@ import "./globals.css";
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const SITE_URL = "https://zoe4all.vercel.app";
@@ -26,7 +28,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "ZOE",
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
   },
   icons: {
     icon: [
@@ -63,6 +65,8 @@ export const viewport = {
   themeColor: "#0f2035",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 5,
+  userScalable: false,
   viewportFit: "cover" as const,
 };
 

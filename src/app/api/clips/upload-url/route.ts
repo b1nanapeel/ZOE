@@ -3,6 +3,15 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { createServerSupabase } from "@/lib/supabase-server";
 
 const VIDEO_BUCKET = "clips";
+const ALLOWED_MIME = new Set([
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+  "video/3gpp",
+  "video/x-matroska",
+  "video/x-m4v",
+  "video/mpeg",
+]);
 
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
@@ -25,6 +34,14 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
+  const fileType = (payload.fileType || "video/mp4").split(";")[0].trim().toLowerCase();
+  if (!ALLOWED_MIME.has(fileType) && !fileType.startsWith("video/")) {
+    return NextResponse.json(
+      { error: `Unsupported video type: ${fileType}` },
+      { status: 415 },
+    );
   }
 
   const ext = (payload.fileName?.split(".").pop() || "mp4")

@@ -23,7 +23,11 @@ function loadPrefs(): UserPreferences {
 
 function savePrefs(prefs: UserPreferences) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PREF_KEY, JSON.stringify(prefs));
+  try {
+    localStorage.setItem(PREF_KEY, JSON.stringify(prefs));
+  } catch {
+    // restricted WebViews (in-app browsers) may block storage — degrade gracefully
+  }
   window.dispatchEvent(new Event("zoe:prefs-changed"));
 }
 
@@ -67,13 +71,16 @@ export function ShowInsightsToggle() {
         role="switch"
         aria-checked={enabled}
         onClick={toggle}
-        className={`relative h-7 w-12 flex-shrink-0 rounded-full transition ${
-          enabled ? "bg-primary-500" : "bg-neutral-300"
-        }`}
+        className="relative flex h-11 w-14 flex-shrink-0 items-center justify-center"
       >
         <span
-          className={`absolute top-0.5 h-6 w-6 rounded-full bg-[#0f2035] transition-all ${
-            enabled ? "left-[22px]" : "left-0.5"
+          className={`block h-7 w-12 rounded-full transition ${
+            enabled ? "bg-primary-500" : "bg-neutral-300"
+          }`}
+        />
+        <span
+          className={`absolute top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#0f2035] transition-all ${
+            enabled ? "left-[33px]" : "left-[5px]"
           }`}
         />
       </button>

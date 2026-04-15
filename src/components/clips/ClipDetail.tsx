@@ -53,6 +53,9 @@ export function ClipDetail({
             src={videoUrl}
             controls
             playsInline
+            preload="metadata"
+            controlsList="nodownload"
+            {...({ "webkit-playsinline": "true" } as Record<string, string>)}
             className="aspect-video w-full"
           />
         ) : (

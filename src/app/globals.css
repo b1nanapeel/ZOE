@@ -82,6 +82,23 @@ body {
   color: #f5f0e0;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Smooth momentum scrolling on iOS for any overflow container */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure all inputs are at least 16px to prevent iOS Safari auto-zoom */
+input,
+textarea,
+select {
+  font-size: max(16px, 1rem);
 }
 
 ::selection {
